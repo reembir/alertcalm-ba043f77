@@ -1,1 +1,4 @@
 project_id = "inysdmnsgrzdumezdact"
+
+[functions.pikud-haoref-alerts]
+verify_jwt = false
