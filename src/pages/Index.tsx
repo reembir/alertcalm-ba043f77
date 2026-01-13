@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
@@ -6,16 +6,53 @@ import HomeTab from '@/components/tabs/HomeTab';
 import AlertsTab from '@/components/tabs/AlertsTab';
 import FamilyTab from '@/components/tabs/FamilyTab';
 import SettingsTab from '@/components/tabs/SettingsTab';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useAlerts } from '@/hooks/useAlerts';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
+  const [homeCity, setHomeCity] = useState<string | null>(null);
+  const [triggerBreathing, setTriggerBreathing] = useState(false);
+  const { user } = useAuth();
+
+  // Fetch user's home city
+  useEffect(() => {
+    const fetchHomeCity = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('alert_settings')
+        .select('home_city')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (data?.home_city) {
+        setHomeCity(data.home_city);
+      }
+    };
+
+    fetchHomeCity();
+  }, [user]);
+
+  // Handle alert for home area
+  const handleAlertForHome = useCallback(() => {
+    setActiveTab('home');
+    setTriggerBreathing(true);
+  }, []);
+
+  // Use alerts hook
+  useAlerts({
+    homeCity,
+    onAlertForHome: handleAlertForHome
+  });
 
   const renderTab = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeTab />;
+        return <HomeTab autoStart={triggerBreathing} onAutoStartHandled={() => setTriggerBreathing(false)} />;
       case 'alerts':
-        return <AlertsTab />;
+        return <AlertsTab homeCity={homeCity} />;
       case 'family':
         return <FamilyTab />;
       case 'settings':
