@@ -19,7 +19,10 @@ export type Database = {
           alert_sound: string
           auto_share_location: boolean
           created_at: string
+          home_city: string | null
           id: string
+          push_enabled: boolean
+          push_subscription: Json | null
           updated_at: string
           user_id: string
           vibration_enabled: boolean
@@ -28,7 +31,10 @@ export type Database = {
           alert_sound?: string
           auto_share_location?: boolean
           created_at?: string
+          home_city?: string | null
           id?: string
+          push_enabled?: boolean
+          push_subscription?: Json | null
           updated_at?: string
           user_id: string
           vibration_enabled?: boolean
@@ -37,7 +43,10 @@ export type Database = {
           alert_sound?: string
           auto_share_location?: boolean
           created_at?: string
+          home_city?: string | null
           id?: string
+          push_enabled?: boolean
+          push_subscription?: Json | null
           updated_at?: string
           user_id?: string
           vibration_enabled?: boolean

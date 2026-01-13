@@ -8,7 +8,12 @@ import CompletionScreen from '@/components/CompletionScreen';
 
 const COUNTDOWN_DURATION = 60;
 
-const HomeTab = () => {
+interface HomeTabProps {
+  autoStart?: boolean;
+  onAutoStartHandled?: () => void;
+}
+
+const HomeTab = ({ autoStart, onAutoStartHandled }: HomeTabProps) => {
   const [isActive, setIsActive] = useState(false);
   const [countdown, setCountdown] = useState(COUNTDOWN_DURATION);
   const [isComplete, setIsComplete] = useState(false);
@@ -29,6 +34,14 @@ const HomeTab = () => {
     setCountdown(COUNTDOWN_DURATION);
     setIsComplete(false);
   }, []);
+
+  // Auto-start breathing when there's an alert for user's area
+  useEffect(() => {
+    if (autoStart && !isActive) {
+      startAlert();
+      onAutoStartHandled?.();
+    }
+  }, [autoStart, isActive, startAlert, onAutoStartHandled]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
