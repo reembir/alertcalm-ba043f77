@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Volume2, Vibrate, MapPin, LogOut, User, Bell, Check, Home } from 'lucide-react';
+import { Volume2, Vibrate, MapPin, LogOut, User, Bell, Check, Home, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { israelCities } from '@/data/israelCities';
 
 interface Settings {
   alert_sound: string;
@@ -24,14 +25,6 @@ const alertSounds = [
   { id: 'soft-waves', name: 'גלי ים', emoji: '🌊' },
   { id: 'forest-birds', name: 'ציפורי יער', emoji: '🐦' },
   { id: 'meditation-bowl', name: 'קערת מדיטציה', emoji: '🎶' },
-];
-
-const israelCities = [
-  'תל אביב', 'ירושלים', 'חיפה', 'באר שבע', 'אשדוד', 'אשקלון',
-  'נתניה', 'רמת גן', 'פתח תקווה', 'הרצליה', 'כפר סבא', 'רעננה',
-  'ראשון לציון', 'חולון', 'בת ים', 'נתיבות', 'שדרות', 'אופקים',
-  'קריית גת', 'דימונה', 'אילת', 'עכו', 'נהריה', 'קריית שמונה',
-  'טבריה', 'צפת', 'מודיעין', 'רחובות', 'נס ציונה', 'יבנה'
 ];
 
 const SettingsTab = () => {
@@ -127,9 +120,13 @@ const SettingsTab = () => {
     saveSettings({ home_city: city });
   };
 
-  const filteredCities = israelCities.filter(city => 
-    city.includes(citySearch) || citySearch === ''
-  );
+  const filteredCities = useMemo(() => {
+    if (!citySearch) return israelCities.slice(0, 50); // Show first 50 when empty
+    const search = citySearch.trim().toLowerCase();
+    return israelCities.filter(city => 
+      city.toLowerCase().includes(search)
+    ).slice(0, 100); // Limit to 100 results
+  }, [citySearch]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -170,24 +167,31 @@ const SettingsTab = () => {
           תקבל התראות רק כשיש אזעקה באזור שלך
         </p>
         <div className="relative">
-          <Input
-            placeholder="חפש עיר..."
-            value={citySearch}
-            onChange={(e) => {
-              setCitySearch(e.target.value);
-              setShowCities(true);
-            }}
-            onFocus={() => setShowCities(true)}
-            className="w-full"
-          />
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="חפש עיר או יישוב..."
+              value={citySearch}
+              onChange={(e) => {
+                setCitySearch(e.target.value);
+                setShowCities(true);
+              }}
+              onFocus={() => setShowCities(true)}
+              onBlur={() => setTimeout(() => setShowCities(false), 200)}
+              className="w-full pr-10"
+            />
+          </div>
           {showCities && filteredCities.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+              <div className="p-2 text-xs text-muted-foreground border-b">
+                {citySearch ? `נמצאו ${filteredCities.length} תוצאות` : `${israelCities.length} ערים ויישובים`}
+              </div>
               {filteredCities.map(city => (
                 <button
                   key={city}
                   onClick={() => selectCity(city)}
-                  className={`w-full text-right px-4 py-2 hover:bg-primary/10 transition-colors ${
-                    settings.home_city === city ? 'bg-primary/10 font-medium' : ''
+                  className={`w-full text-right px-4 py-2.5 hover:bg-primary/10 transition-colors border-b border-border/50 last:border-b-0 ${
+                    settings.home_city === city ? 'bg-primary/10 font-medium text-primary' : ''
                   }`}
                 >
                   {city}
