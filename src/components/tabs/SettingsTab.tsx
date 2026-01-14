@@ -166,9 +166,9 @@ const SettingsTab = () => {
         <p className="text-sm text-muted-foreground">
           תקבל התראות רק כשיש אזעקה באזור שלך
         </p>
-        <div className="relative">
+        <div className="relative z-[100]">
           <div className="relative">
-            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <Input
               placeholder="חפש עיר או יישוב..."
               value={citySearch}
@@ -177,19 +177,22 @@ const SettingsTab = () => {
                 setShowCities(true);
               }}
               onFocus={() => setShowCities(true)}
-              onBlur={() => setTimeout(() => setShowCities(false), 200)}
+              onBlur={() => setTimeout(() => setShowCities(false), 300)}
               className="w-full pr-10"
             />
           </div>
           {showCities && filteredCities.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-              <div className="p-2 text-xs text-muted-foreground border-b">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-2xl max-h-72 overflow-y-auto z-[9999]" style={{ position: 'absolute' }}>
+              <div className="sticky top-0 p-2 text-xs text-muted-foreground border-b bg-background">
                 {citySearch ? `נמצאו ${filteredCities.length} תוצאות` : `${israelCities.length} ערים ויישובים`}
               </div>
               {filteredCities.map(city => (
                 <button
                   key={city}
-                  onClick={() => selectCity(city)}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    selectCity(city);
+                  }}
                   className={`w-full text-right px-4 py-2.5 hover:bg-primary/10 transition-colors border-b border-border/50 last:border-b-0 ${
                     settings.home_city === city ? 'bg-primary/10 font-medium text-primary' : ''
                   }`}
